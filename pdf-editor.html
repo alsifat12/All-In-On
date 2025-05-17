@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF Upload</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .upload-box {
+      background: #fff;
+      border: 2px dashed #ddd;
+      padding: 40px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    .upload-box h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .upload-box img {
+      width: 80px;
+      margin-bottom: 10px;
+    }
+    .upload-box p {
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .divider {
+      margin: 10px 0;
+      color: #aaa;
+    }
+    .upload-btn {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+    .upload-btn:hover {
+      background-color: #d32f2f;
+    }
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="upload-box">
+    <h2>Upload Your Files</h2>
+    <label for="pdfInput">
+      <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="PDF Icon"/>
+    </label>
+    <p>Drop PDF Files Here</p>
+    <div class="divider">or</div>
+    <label for="pdfInput">
+      <button class="upload-btn">UPLOAD PDF TO EDIT</button>
+    </label>
+    <input type="file" id="pdfInput" accept="application/pdf" />
+  </div>
+
+</body>
+</html>
