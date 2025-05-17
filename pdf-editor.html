@@ -1,76 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PDF Upload</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .upload-box {
-      background: #fff;
-      border: 2px dashed #ddd;
-      padding: 40px;
-      border-radius: 8px;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      width: 300px;
-    }
-    .upload-box h2 {
-      margin-bottom: 20px;
-      color: #333;
-    }
-    .upload-box img {
-      width: 80px;
-      margin-bottom: 10px;
-    }
-    .upload-box p {
-      color: #666;
-      margin-bottom: 10px;
-    }
-    .divider {
-      margin: 10px 0;
-      color: #aaa;
-    }
-    .upload-btn {
-      background-color: #f44336;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background 0.3s ease;
-    }
-    .upload-btn:hover {
-      background-color: #d32f2f;
-    }
-    input[type="file"] {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Editor</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+        }
+        .upload-container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .upload-box {
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            padding: 40px 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .upload-box:hover {
+            background-color: #f8f9fa;
+        }
+        .upload-box p {
+            margin: 10px 0;
+            color: #555;
+        }
+        .upload-box .pdf-icon {
+            font-size: 50px; /* Placeholder for an icon */
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+        .upload-button {
+            background-color: #dc3545; /* Red color similar to image */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .upload-button:hover {
+            background-color: #c82333;
+        }
+        #fileInput {
+            display: none; /* Hide the default file input */
+        }
+        .or-separator {
+            margin: 20px 0;
+            color: #777;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+    <div class="upload-container">
+        <h2>Upload Your Files</h2>
+        <div class="upload-box" id="dropZone">
+            <div class="pdf-icon">📄</div>
+            <p>Drop PDF Files Here</p>
+            <div class="or-separator">or</div>
+            <button type="button" class="upload-button" id="uploadButton">UPLOAD PDF TO EDIT</button>
+        </div>
+        <input type="file" id="fileInput" accept=".pdf">
+        </div>
 
-  <div class="upload-box">
-    <h2>Upload Your Files</h2>
-    <label for="pdfInput">
-      <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="PDF Icon"/>
-    </label>
-    <p>Drop PDF Files Here</p>
-    <div class="divider">or</div>
-    <label for="pdfInput">
-      <button class="upload-btn">UPLOAD PDF TO EDIT</button>
-    </label>
-    <input type="file" id="pdfInput" accept="application/pdf" />
-  </div>
+    <script>
+        // Basic JavaScript for triggering file input and drag & drop (very simplified)
+        const dropZone = document.getElementById('dropZone');
+        const uploadButton = document.getElementById('uploadButton');
+        const fileInput = document.getElementById('fileInput');
 
+        uploadButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (event) => {
+            const files = event.target.files;
+            if (files.length > 0) {
+                console.log('File selected:', files[0].name);
+                // Add further file handling logic here
+                alert('আপনি ' + files[0].name + ' ফাইলটি নির্বাচন করেছেন।');
+            }
+        });
+
+        // Basic Drag and Drop
+        dropZone.addEventListener('dragover', (event) => {
+            event.preventDefault(); // Prevent default behavior (Prevent file from being opened)
+            dropZone.style.backgroundColor = '#e9ecef';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.backgroundColor = 'transparent';
+        });
+
+        dropZone.addEventListener('drop', (event) => {
+            event.preventDefault();
+            dropZone.style.backgroundColor = 'transparent';
+            if (event.dataTransfer.files.length) {
+                fileInput.files = event.dataTransfer.files; // Assign dropped files to input
+                console.log('File dropped:', event.dataTransfer.files[0].name);
+                // Add further file handling logic here
+                alert('আপনি ' + event.dataTransfer.files[0].name + ' ফাইলটি ড্রপ করেছেন।');
+            }
+        });
+
+        // Clicking anywhere in the dropZone (except the button) should also trigger file input
+        dropZone.addEventListener('click', (event) => {
+            if (event.target !== uploadButton && !uploadButton.contains(event.target)) {
+                 fileInput.click();
+            }
+        });
+
+    </script>
 </body>
 </html>
