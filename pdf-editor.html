@@ -4,124 +4,338 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Editor</title>
-    <style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <style>
+        /* আগের CSS কোডগুলো এখানে থাকবে */
         body {
             font-family: sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* For toolbar and content */
             align-items: center;
             min-height: 100vh;
             background-color: #f0f2f5;
             margin: 0;
         }
-        .upload-container {
+        .toolbar {
+            background-color: #333;
+            padding: 8px 15px;
+            color: white;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: flex-start; /* Align items to the left */
+            align-items: center;
+            flex-wrap: wrap; /* Allow tools to wrap to next line if needed */
+        }
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            margin-right: 20px; /* Space between groups */
+            border-right: 1px solid #555; /* Separator */
+            padding-right: 15px;
+        }
+        .toolbar-group:last-child {
+            border-right: none;
+            margin-right: 0;
+            padding-right: 0;
+        }
+        .tool-button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 8px 10px;
+            margin: 0 3px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 60px; /* Minimum width for button text */
+        }
+        .tool-button i {
+            font-size: 18px; /* Icon size */
+            margin-bottom: 3px;
+        }
+        .tool-button:hover, .tool-button.active {
+            background-color: #555;
+            border-radius: 4px;
+        }
+        .main-content {
+            display: flex;
+            width: 100%;
+            flex-grow: 1; /* Takes remaining height */
+        }
+        .pdf-viewer-area {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #e9ecef;
+            overflow: auto; /* For scrollable PDF */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align PDF to top */
+        }
+        #pdfCanvas {
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .upload-container { /* Styles from previous response, adjusted */
+            width: 100%;
+            max-width: 600px; /* Limit width */
+            margin: 20px auto; /* Center it if it's the only thing visible */
             background-color: #ffffff;
             padding: 30px 40px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-        .upload-box {
-            border: 2px dashed #007bff;
-            border-radius: 8px;
-            padding: 40px 20px;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .upload-box:hover {
-            background-color: #f8f9fa;
-        }
-        .upload-box p {
-            margin: 10px 0;
-            color: #555;
-        }
-        .upload-box .pdf-icon {
-            font-size: 50px; /* Placeholder for an icon */
-            color: #dc3545;
-            margin-bottom: 15px;
-        }
-        .upload-button {
-            background-color: #dc3545; /* Red color similar to image */
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .upload-button:hover {
-            background-color: #c82333;
-        }
-        #fileInput {
-            display: none; /* Hide the default file input */
-        }
-        .or-separator {
-            margin: 20px 0;
-            color: #777;
-            font-weight: bold;
-        }
+        /* Add other necessary CSS */
     </style>
 </head>
 <body>
-    <div class="upload-container">
-        <h2>Upload Your Files</h2>
-        <div class="upload-box" id="dropZone">
-            <div class="pdf-icon">📄</div>
-            <p>Drop PDF Files Here</p>
-            <div class="or-separator">or</div>
-            <button type="button" class="upload-button" id="uploadButton">UPLOAD PDF TO EDIT</button>
+    <div class="toolbar">
+        <div class="toolbar-group">
+            <button class="tool-button" id="toolPointer" title="Pointer"><i class="fas fa-mouse-pointer"></i> Pointer</button>
+            <button class="tool-button" id="toolEdit" title="Edit Text"><i class="fas fa-edit"></i> Edit</button>
+            <button class="tool-button" id="toolReplaceText" title="Replace Text"><i class="fas fa-file-word"></i> Replace Text</button> <button class="tool-button" id="toolHighlight" title="Highlight"><i class="fas fa-highlighter"></i> Highlight</button>
+            <button class="tool-button" id="toolAddImage" title="Add Image"><i class="fas fa-image"></i> Add Image</button>
+            <button class="tool-button" id="toolEraser" title="Eraser"><i class="fas fa-eraser"></i> Eraser</button>
         </div>
-        <input type="file" id="fileInput" accept=".pdf">
+        <div class="toolbar-group">
+            <button class="tool-button" id="toolDraw" title="Draw"><i class="fas fa-pencil-alt"></i> Draw</button>
+            <button class="tool-button" id="toolSignature" title="Signature"><i class="fas fa-signature"></i> Signature</button>
+        </div>
+        <div class="toolbar-group">
+            <button class="tool-button" id="toolUndo" title="Undo"><i class="fas fa-undo"></i> Undo</button>
+            <button class="tool-button" id="toolMore" title="More"><i class="fas fa-ellipsis-h"></i> More</button>
+        </div>
+        <div class="toolbar-group" style="margin-left: auto;"> <button class="tool-button" id="toolSummarizer" title="Summarizer"><i class="fas fa-align-left"></i> Summarizer</button> <button class="tool-button" id="toolSend" title="Send"><i class="fas fa-paper-plane"></i> Send</button>
+             <button class="tool-button" id="toolSave" title="Save"><i class="fas fa-save"></i> Save</button>
+             <button class="tool-button" id="toolConvert" title="Convert" style="background-color: #dc3545; padding: 10px 15px;"><i class="fas fa-exchange-alt"></i> CONVERT</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="upload-container" id="uploadContainer">
+            <h2>Upload Your Files</h2>
+            <div class="upload-box" id="dropZone">
+                <div class="pdf-icon">📄</div>
+                <p>Drop PDF Files Here</p>
+                <div class="or-separator">or</div>
+                <button type="button" class="upload-button" id="uploadButton">UPLOAD PDF TO EDIT</button>
+            </div>
+            <input type="file" id="fileInput" accept=".pdf" style="display: none;">
         </div>
 
+        <div class="pdf-viewer-area" id="pdfViewerArea" style="display: none;">
+            <canvas id="pdfCanvas"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';</script>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script>
-        // Basic JavaScript for triggering file input and drag & drop (very simplified)
-        const dropZone = document.getElementById('dropZone');
-        const uploadButton = document.getElementById('uploadButton');
+        const uploadContainer = document.getElementById('uploadContainer');
+        const pdfViewerArea = document.getElementById('pdfViewerArea');
+        const pdfCanvas = document.getElementById('pdfCanvas');
+        const ctx = pdfCanvas.getContext('2d');
         const fileInput = document.getElementById('fileInput');
+        const uploadButton = document.getElementById('uploadButton');
+        const dropZone = document.getElementById('dropZone');
 
-        uploadButton.addEventListener('click', () => {
-            fileInput.click();
-        });
+        let currentTool = null;
+        let pdfDoc = null;
+        let currentPageNum = 1;
+        let scale = 1.5; // Initial scale
 
-        fileInput.addEventListener('change', (event) => {
-            const files = event.target.files;
-            if (files.length > 0) {
-                console.log('File selected:', files[0].name);
-                // Add further file handling logic here
-                alert('আপনি ' + files[0].name + ' ফাইলটি নির্বাচন করেছেন।');
-            }
-        });
-
-        // Basic Drag and Drop
-        dropZone.addEventListener('dragover', (event) => {
-            event.preventDefault(); // Prevent default behavior (Prevent file from being opened)
-            dropZone.style.backgroundColor = '#e9ecef';
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.style.backgroundColor = 'transparent';
-        });
-
-        dropZone.addEventListener('drop', (event) => {
-            event.preventDefault();
-            dropZone.style.backgroundColor = 'transparent';
-            if (event.dataTransfer.files.length) {
-                fileInput.files = event.dataTransfer.files; // Assign dropped files to input
-                console.log('File dropped:', event.dataTransfer.files[0].name);
-                // Add further file handling logic here
-                alert('আপনি ' + event.dataTransfer.files[0].name + ' ফাইলটি ড্রপ করেছেন।');
-            }
-        });
-
-        // Clicking anywhere in the dropZone (except the button) should also trigger file input
+        // --- File Upload Logic (simplified from previous response) ---
+        uploadButton.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('click', (event) => {
             if (event.target !== uploadButton && !uploadButton.contains(event.target)) {
-                 fileInput.click();
+                fileInput.click();
             }
         });
+        fileInput.addEventListener('change', handleFileSelect);
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.backgroundColor = '#e9ecef'; });
+        dropZone.addEventListener('dragleave', () => dropZone.style.backgroundColor = 'transparent');
+        dropZone.addEventListener('drop', handleFileDrop);
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file && file.type === "application/pdf") {
+                loadPdf(file);
+            } else {
+                alert("অনুগ্রহ করে একটি পিডিএফ ফাইল নির্বাচন করুন।");
+            }
+        }
+
+        function handleFileDrop(event) {
+            event.preventDefault();
+            dropZone.style.backgroundColor = 'transparent';
+            const file = event.dataTransfer.files[0];
+            if (file && file.type === "application/pdf") {
+                loadPdf(file);
+            } else {
+                alert("অনুগ্রহ করে একটি পিডিএফ ফাইল ড্রপ করুন।");
+            }
+        }
+
+        async function loadPdf(file) {
+            uploadContainer.style.display = 'none';
+            pdfViewerArea.style.display = 'flex'; // Show viewer
+
+            const fileReader = new FileReader();
+            fileReader.onload = async function() {
+                const typedarray = new Uint8Array(this.result);
+                try {
+                    pdfDoc = await pdfjsLib.getDocument({data: typedarray}).promise;
+                    renderPage(currentPageNum);
+                } catch (error) {
+                    console.error("পিডিএফ লোড করতে সমস্যা:", error);
+                    alert("পিডিএফ ফাইলটি লোড করা যায়নি।");
+                    uploadContainer.style.display = 'block'; // Show upload again
+                    pdfViewerArea.style.display = 'none';
+                }
+            };
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        async function renderPage(num) {
+            if (!pdfDoc) return;
+            currentPageNum = num;
+            const page = await pdfDoc.getPage(num);
+            const viewport = page.getViewport({ scale: scale });
+            pdfCanvas.height = viewport.height;
+            pdfCanvas.width = viewport.width;
+
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+            await page.render(renderContext).promise;
+            // After rendering, you might want to enable drawing/editing on top
+        }
+
+
+        // --- Toolbar Button Event Listeners ---
+        document.querySelectorAll('.tool-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Deactivate previously active button
+                const activeButton = document.querySelector('.tool-button.active');
+                if (activeButton) activeButton.classList.remove('active');
+
+                // Activate clicked button
+                button.classList.add('active');
+                currentTool = button.id;
+                console.log("Selected tool:", currentTool);
+
+                // Implement tool-specific logic here or call functions
+                handleToolSelection(currentTool);
+            });
+        });
+
+        function handleToolSelection(toolId) {
+            // Reset canvas event listeners or modes
+            pdfCanvas.onmousedown = null;
+            pdfCanvas.onmousemove = null;
+            pdfCanvas.onmouseup = null;
+            pdfCanvas.onclick = null;
+            pdfCanvas.style.cursor = 'default';
+
+            switch (toolId) {
+                case 'toolPointer':
+                    pdfCanvas.style.cursor = 'default';
+                    // Logic for pointer
+                    break;
+                case 'toolEdit':
+                    // Very complex: Needs to identify text blocks, allow editing
+                    // This usually involves overlaying HTML input fields or advanced canvas text manipulation
+                    alert("টেক্সট এডিট করার ফিচার একটি জটিল বিষয় এবং এর জন্য অ্যাডভান্সড কোডিং প্রয়োজন।");
+                    break;
+                case 'toolHighlight':
+                    pdfCanvas.style.cursor = 'crosshair';
+                    // setupHighlightListeners(); // Example function call
+                    break;
+                case 'toolAddImage':
+                    // Trigger file input for image, then use PDF-lib to add it
+                    const imageInput = document.createElement('input');
+                    imageInput.type = 'file';
+                    imageInput.accept = 'image/*';
+                    imageInput.onchange = async (e) => {
+                        const imgFile = e.target.files[0];
+                        if (imgFile && pdfDoc) {
+                            const existingPdfBytes = await getPdfBytes(); // Function to get current PDF bytes
+                            const newPdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+                            const imageBytes = await imgFile.arrayBuffer();
+                            const pdfImage = await newPdfDoc.embedPng(imageBytes); // or embedJpg
+                            const firstPage = newPdfDoc.getPages()[currentPageNum - 1];
+                            firstPage.drawImage(pdfImage, {
+                                x: 50, // Example coordinates
+                                y: firstPage.getHeight() - 150, // Example coordinates
+                                width: 100, // Example size
+                                height: 100,
+                            });
+                            const pdfBytes = await newPdfDoc.save();
+                            // Reload the modified PDF (this is a simplified approach)
+                            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                            loadPdf(new File([blob], "edited.pdf", {type: "application/pdf"}));
+                            alert("ছবি যোগ করা হয়েছে (উদাহরণস্বরূপ)।");
+                        }
+                    };
+                    imageInput.click();
+                    break;
+                // ... other tools
+                case 'toolSave':
+                    savePdf();
+                    break;
+                default:
+                    console.log("অজানা টুল:", toolId);
+            }
+        }
+
+        async function getPdfBytes() {
+            // This function needs to get the current state of the PDF document
+            // If using PDF-lib from the start, you'd have the PDFDocument object.
+            // If you only loaded with PDF.js, you need the original file bytes
+            // or save changes progressively to a PDF-lib document instance.
+            // For this example, let's assume we have the original file input for simplicity
+            // In a real app, you'd manage the PDF document state more robustly.
+            if (fileInput.files.length > 0) {
+                return await fileInput.files[0].arrayBuffer();
+            }
+            return null; // Should not happen in a proper flow
+        }
+
+        async function savePdf() {
+            if (!pdfDoc) {
+                alert("কোনো পিডিএফ ফাইল লোড করা হয়নি।");
+                return;
+            }
+            try {
+                // If you've been making changes with PDF-lib, you'd call .save() on your PDFDocument instance
+                // For this example, let's assume 'pdfLibDoc' is your PDF-lib document instance that holds changes
+                // If you don't have one actively being modified, this simple save won't reflect edits done via canvas overlays.
+                // Real saving requires tracking all edits and applying them to a PDF-lib document.
+
+                alert("সেভ করার কার্যকারিতা যোগ করতে, আপনাকে PDF-lib ব্যবহার করে সকল পরিবর্তন পিডিএফ ডকুমেন্টে প্রয়োগ করতে হবে এবং তারপর সেভ করতে হবে।");
+
+                // Example: If you had a 'pdfLibDoc' instance from PDF-lib
+                // const pdfBytes = await pdfLibDoc.save();
+                // const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                // const link = document.createElement('a');
+                // link.href = URL.createObjectURL(blob);
+                // link.download = 'edited_document.pdf';
+                // link.click();
+                // URL.revokeObjectURL(link.href);
+
+            } catch (error) {
+                console.error("পিডিএফ সেভ করতে সমস্যা:", error);
+                alert("পিডিএফ ফাইলটি সেভ করা যায়নি।");
+            }
+        }
+
+        // Placeholder for canvas interaction (very basic)
+        // For features like Highlight or Draw, you'd need more complex event handling
+        // to draw on the canvas and then translate those drawings to PDF-lib commands.
 
     </script>
 </body>
